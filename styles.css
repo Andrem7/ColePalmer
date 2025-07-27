@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.content {
+    width: 100%;
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 400;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 40px;
+    font-style: italic;
+}
+
+.bio-section {
+    margin-bottom: 60px;
+}
+
+.bio-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.nav-link {
+    font-size: 1.3rem;
+    color: #333;
+    text-decoration: underline;
+    text-decoration-color: #333;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    width: fit-content;
+}
+
+.nav-link:hover {
+    background-color: #f0f0f0;
+    padding: 8px 16px;
+    margin: -8px -16px;
+    border-radius: 4px;
+    text-decoration-color: #000;
+    color: #000;
+    transform: translateX(10px);
+}
+
+.nav-link:active {
+    transform: scale(0.98) translateX(10px);
+}
+
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.page-transition.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2rem;
+    color: #666;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 40px 20px;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .nav-link {
+        font-size: 1.2rem;
+    }
+}
