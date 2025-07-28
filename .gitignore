@@ -19,8 +19,9 @@ ehthumbs.db
 *.tmp
 *.temp
 
-# Node modules (if you add Node.js later)
+# Node modules
 node_modules/
+package-lock.json
 
 # Environment variables
 .env
