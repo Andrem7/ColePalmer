@@ -26,3 +26,7 @@ package-lock.json
 # Environment variables
 .env
 .env.local
+
+# API Keys (never commit these to public repos)
+config.js
+firebase-config.js

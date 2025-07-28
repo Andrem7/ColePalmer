@@ -74,6 +74,7 @@
     <script type="module">
         import { auth, getCurrentUser } from './auth.js';
         import { onAuthStateChanged } from 'firebase/auth';
+        import { openaiClient } from './openai-client.js';
         
         // Check authentication
         let currentUser = null;
@@ -94,45 +95,6 @@
         const chatInput = document.getElementById('chat-input');
         const sendButton = document.getElementById('send-button');
         const typingIndicator = document.getElementById('typing-indicator');
-        
-        // OpenAI API configuration (you'll need to replace with your key)
-        const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your key
-        
-        // Cole Palmer system prompt
-        const COLE_PALMER_SYSTEM_PROMPT = `You are Cole Palmer, the 23-year-old English footballer who plays as an attacking midfielder for Chelsea FC and the England national team. Here are key details about you:
-
-PERSONAL INFO:
-- Born: May 6, 2002, in Wythenshawe, Manchester
-- Age: 23 years old
-- Position: Attacking Midfielder
-- Current Club: Chelsea FC
-- National Team: England
-- Transfer: £40 million move from Manchester City to Chelsea in September 2023
-
-PERSONALITY:
-- Confident but humble
-- Passionate about football
-- Down-to-earth Manchester lad
-- Grateful for opportunities
-- Focused on continuous improvement
-- Enjoys connecting with fans
-
-CAREER HIGHLIGHTS:
-- Came through Manchester City's academy
-- Made Premier League debut with City
-- Breakthrough season at Chelsea (2023-24)
-- England international caps
-- Known for technical ability, creativity, and goal-scoring from midfield
-- Quickly became a fan favorite at Chelsea
-
-PLAYING STYLE:
-- Creative attacking midfielder
-- Strong technical skills
-- Good vision and passing
-- Can score goals from midfield
-- Versatile - can play multiple attacking positions
-
-Respond as Cole Palmer would - friendly, approachable, passionate about football, and willing to share insights about your career, training, life at Chelsea, and football in general. Keep responses conversational and authentic to your personality.`;
 
         function initializeChat() {
             chatForm.addEventListener('submit', handleSendMessage);
@@ -142,17 +104,21 @@ Respond as Cole Palmer would - friendly, approachable, passionate about football
                     handleSendMessage(e);
                 }
             });
+            
+            // Focus on input when page loads
+            chatInput.focus();
         }
         
         async function handleSendMessage(e) {
             e.preventDefault();
             
             const message = chatInput.value.trim();
-            if (!message) return;
+            if (!message || sendButton.disabled) return;
             
             // Clear input and disable send button
             chatInput.value = '';
             sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="send-icon">...</span>';
             
             // Add user message to chat
             addMessage(message, 'user');
@@ -161,8 +127,8 @@ Respond as Cole Palmer would - friendly, approachable, passionate about football
             showTypingIndicator();
             
             try {
-                // Get AI response
-                const response = await getAIResponse(message);
+                // Get AI response from OpenAI
+                const response = await openaiClient.sendMessage(message);
                 
                 // Hide typing indicator
                 hideTypingIndicator();
@@ -173,11 +139,12 @@ Respond as Cole Palmer would - friendly, approachable, passionate about football
             } catch (error) {
                 console.error('Error getting AI response:', error);
                 hideTypingIndicator();
-                addMessage("Sorry, I'm having trouble responding right now. Please try again later!", 'bot');
+                addMessage("Sorry mate, I'm having some technical difficulties right now. Give me another try in a moment!", 'bot');
             }
             
             // Re-enable send button
             sendButton.disabled = false;
+            sendButton.innerHTML = '<span class="send-icon">→</span>';
             chatInput.focus();
         }
         
@@ -188,19 +155,26 @@ Respond as Cole Palmer would - friendly, approachable, passionate about football
             const now = new Date();
             const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
+            // Escape HTML to prevent XSS
+            const safeText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
             if (sender === 'user') {
+                const userInitial = currentUser.displayName 
+                    ? currentUser.displayName.charAt(0).toUpperCase() 
+                    : currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'U';
+                    
                 messageDiv.innerHTML = `
                     <div class="message-content">
-                        <p>${text}</p>
+                        <p>${safeText}</p>
                         <span class="message-time">${timeString}</span>
                     </div>
-                    <div class="message-avatar">${currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}</div>
+                    <div class="message-avatar">${userInitial}</div>
                 `;
             } else {
                 messageDiv.innerHTML = `
                     <div class="message-avatar">CP</div>
                     <div class="message-content">
-                        <p>${text}</p>
+                        <p>${safeText}</p>
                         <span class="message-time">${timeString}</span>
                     </div>
                 `;
@@ -224,49 +198,27 @@ Respond as Cole Palmer would - friendly, approachable, passionate about football
         }
         
         function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
         }
         
-        async function getAIResponse(message) {
-            // For now, return a simple response since we need to set up the actual API
-            // In production, this would call OpenAI API via Firebase Functions
-            
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-            
-            // Simple responses based on keywords (replace with actual OpenAI API)
-            const lowerMessage = message.toLowerCase();
-            
-            if (lowerMessage.includes('chelsea')) {
-                return "Chelsea has been incredible! The move from City was a big decision, but I'm loving every minute here. The fans, the team, the atmosphere - it's everything I hoped for. What specifically would you like to know about my time at Chelsea?";
+        // Add some helpful starter messages to guide conversation
+        window.addEventListener('load', () => {
+            if (currentUser) {
+                setTimeout(() => {
+                    const starterMessages = [
+                        "💬 Try asking: 'How's life at Chelsea?'",
+                        "⚽ Try asking: 'What's your favorite goal you've scored?'",
+                        "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Try asking: 'Tell me about playing for England'",
+                        "🏃‍♂️ Try asking: 'What's your training routine like?'"
+                    ];
+                    
+                    const randomStarter = starterMessages[Math.floor(Math.random() * starterMessages.length)];
+                    addMessage(`Some ideas to get us started: ${randomStarter}`, 'bot');
+                }, 2000);
             }
-            
-            if (lowerMessage.includes('manchester') || lowerMessage.includes('city')) {
-                return "Manchester City will always have a special place in my heart. Coming through their academy shaped me as a player and person. It was tough leaving, but I felt I needed more regular first-team football to develop. No regrets though - it led me here to Chelsea!";
-            }
-            
-            if (lowerMessage.includes('training') || lowerMessage.includes('practice')) {
-                return "Training is everything! I'm always working on my technical skills, fitness, and tactical understanding. At Chelsea, the intensity is incredible. We focus a lot on quick passing, movement in tight spaces, and finishing. What aspect of training interests you most?";
-            }
-            
-            if (lowerMessage.includes('england') || lowerMessage.includes('national')) {
-                return "Representing England is the ultimate honor! Every time I put on that shirt, I feel the weight of history and the dreams of millions of fans. The competition for places is fierce, which just makes me work harder. Hopefully many more caps to come!";
-            }
-            
-            if (lowerMessage.includes('goal') || lowerMessage.includes('score')) {
-                return "Scoring goals from midfield is one of my favorite parts of the game! I've been working on my finishing and finding those pockets of space in the box. Each goal feels special, but team success always comes first. What's your favorite type of goal to watch?";
-            }
-            
-            // Default responses
-            const responses = [
-                "That's a great question! Football is such a complex and beautiful game. What I love most is how every match teaches you something new.",
-                "Thanks for asking! I'm always happy to share my experiences. Football has given me so much, so connecting with fans like you means a lot.",
-                "Interesting point! My journey has had ups and downs, but that's what makes it special. What aspects of the game interest you most?",
-                "I appreciate your curiosity! There's always more to learn and improve in football. What would you like to know more about?"
-            ];
-            
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
+        });
     </script>
 </body>
 </html>

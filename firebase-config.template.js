@@ -1,10 +1,9 @@
-// Firebase configuration
-// You'll need to replace these with your actual Firebase project credentials
+// Firebase configuration template - copy to firebase-config.js and add your keys
 const firebaseConfig = {
-  apiKey: "your-api-key-here",
-  authDomain: "your-project-id.firebaseapp.com",
+  apiKey: "your-firebase-api-key",
+  authDomain: "your-project.firebaseapp.com",
   projectId: "your-project-id",
-  storageBucket: "your-project-id.firebasestorage.app",
+  storageBucket: "your-project.firebasestorage.app",
   messagingSenderId: "your-sender-id",
   appId: "your-app-id"
 };
