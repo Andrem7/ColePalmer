@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Cole Palmer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chat-styles.css">
+</head>
+<body>
+    <!-- Authentication Header -->
+    <header class="auth-header">
+        <div class="auth-container">
+            <a href="index.html" class="back-link">← Back to Home</a>
+            <div id="user-info" style="display: none;"></div>
+            <button id="auth-button">Sign In</button>
+        </div>
+    </header>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="chat-profile">
+                <div class="chat-avatar">CP</div>
+                <div class="chat-info">
+                    <h2>Cole Palmer</h2>
+                    <p class="chat-status">Chelsea FC • Online</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                <div class="message-avatar">CP</div>
+                <div class="message-content">
+                    <p>Hey there! I'm Cole Palmer. Great to meet you! Ask me anything about my career, training, life at Chelsea, or football in general. What would you like to know?</p>
+                    <span class="message-time">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="chat-input" placeholder="Message Cole Palmer..." required>
+                <button type="submit" id="send-button">
+                    <span class="send-icon">→</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Authentication required modal -->
+    <div id="auth-required-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Sign In Required</h2>
+            <p>You need to sign in to chat with Cole Palmer.</p>
+            <button onclick="window.location.href='index.html'">Go Back to Sign In</button>
+        </div>
+    </div>
+
+    <script>
+        // For demo purposes - replace with your actual Firebase and Google AI integration
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Add bot response (demo)
+            setTimeout(() => {
+                const responses = [
+                    "That's a great question! I love playing at Stamford Bridge - the atmosphere is incredible.",
+                    "Training with Chelsea has been amazing. The facilities at Cobham are world-class!",
+                    "I'm loving life in London and can't wait to help Chelsea win more trophies!",
+                    "Football has always been my passion. From the Manchester City academy to Chelsea - it's been quite a journey!"
+                ];
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(response, 'bot');
+            }, 1000);
+        });
+        
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <p>${text}</p>
+                        <span class="message-time">${timeString}</span>
+                    </div>
+                    <div class="message-avatar">U</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">CP</div>
+                    <div class="message-content">
+                        <p>${text}</p>
+                        <span class="message-time">${timeString}</span>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
